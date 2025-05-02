@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang=\"en\">
+<html lang="en">
 <head>
-  <meta charset=\"UTF-8\">
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ilana Pollack's GitHub Website</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
@@ -13,32 +13,32 @@
 </head>
 <body>
   <h1>Hello everyone!</h1>
-  <p>Welcime to my Github website. My name is Ilana Pollack! Enjoy!</p>
+  <p>Welcome to my website. My name is Ilana Pollack 🎉</p>
 
   <hr>
 
   <h2>🎩 Play the Shell Game 🎩</h2>
 
-  <div id=\"gameArea\">
-    <label for=\"difficulty\">Choose Difficulty: </label>
-    <select id=\"difficulty\">
-        <option value=\"1\">1 (Easy)</option>
-        <option value=\"2\">2</option>
-        <option value=\"3\">3</option>
-        <option value=\"4\">4</option>
-        <option value=\"5\">5 (Medium)</option>
-        <option value=\"6\">6</option>
-        <option value=\"7\">7</option>
-        <option value=\"8\">8</option>
-        <option value=\"9\">9</option>
-        <option value=\"10\">10 (Hard)</option>
+  <div id="gameArea">
+    <label for="difficulty">Choose Difficulty: </label>
+    <select id="difficulty">
+        <option value="1">1 (Easy)</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5 (Medium)</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10 (Hard)</option>
     </select>
 
-    <div style=\"margin-top: 20px;\">
-        <button onclick=\"startGame()\">Start Game</button>
+    <div style="margin-top: 20px;">
+        <button onclick="startGame()">Start Game</button>
     </div>
 
-    <p id=\"message\"></p>
+    <p id="message"></p>
   </div>
 
   <script>
@@ -70,7 +70,7 @@
       guess = parseInt(guess) - 1;
 
       if (cups[guess] === 1)
-          alert(\"Correct! 🎉 You found the ball!\");
+          alert("Correct! 🎉 You found the ball!");
       else
           alert(`Wrong! 😢 The ball was under cup ${cups.indexOf(1) + 1}.`);
     }
