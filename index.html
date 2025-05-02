@@ -1,95 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ilana Pollack's GitHub Website</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ilana's Shell Game</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    #gameArea { margin-top: 30px; }
-    button { padding: 10px 20px; font-size: 16px; }
-    select { font-size: 16px; padding: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #d6f0ff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      color: #2b3a42;
+    }
+
+    #instructionsBox {
+      display: none;
+      margin: 20px auto;
+      width: 60%;
+      padding: 15px;
+      background-color: #fff7c2;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: left;
+    }
+
+    #gameArea {
+      margin-top: 30px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    select {
+      font-size: 16px;
+      padding: 5px;
+    }
+
+    #cupContainer {
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      height: 160px;
+    }
+
+    .cup {
+      width: 80px;
+      height: 120px;
+      background-color: #c97c5d;
+      border-radius: 10px 10px 0 0;
+      position: relative;
+      transition: transform 0.5s ease-in-out;
+      cursor: pointer;
+    }
+
+    .cup::before {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 15px;
+      background-color: #8b4f3d;
+      border-radius: 0 0 10px 10px;
+    }
+
+    #message {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    #scoreBoard {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    #playAgain {
+      display: none;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>Hello everyone!</h1>
-  <p>Welcome to my website. My name is Ilana Pollack 🎉</p>
 
-  <hr>
+  <h1>🎩 Ilana's Shell Game</h1>
+  <p>Can you keep your eye on the ball?</p>
 
-  <h2>🎩 Play the Shell Game 🎩</h2>
+  <button onclick="toggleInstructions()">Show Instructions</button>
+  <div id="instructionsBox">
+    <h3>How to Play:</h3>
+    <ul>
+      <li>Select a difficulty from 1 (easy) to 10 (hard).</li>
+      <li>Watch the cups slide and swap places!</li>
+      <li>Click the cup where you think the ball is hidden.</li>
+      <li>Check your score and try again!</li>
+    </ul>
+  </div>
 
   <div id="gameArea">
     <label for="difficulty">Choose Difficulty: </label>
     <select id="difficulty">
-        <option value="1">1 (Easy)</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5 (Medium)</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10 (Hard)</option>
+      <option value="1">1 (Easy)</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5 (Medium)</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10 (Hard)</option>
     </select>
+    <button onclick="startGame()">Start Game</button>
 
-    <div style="margin-top: 20px;">
-        <button onclick="startGame()">Start Game</button>
-    </div>
-
+    <div id="cupContainer"></div>
     <p id="message"></p>
+    <div id="scoreBoard">✅ Wins: <span id="wins">0</span> | ❌ Losses: <span id="losses">0</span></div>
+    <button id="playAgain" onclick="startGame()">Play Again</button>
   </div>
 
   <script>
+    let cups = [];
+    let ballIndex = -1;
+    let allowGuess = false;
+    let wins = 0;
+    let losses = 0;
+
+    function toggleInstructions() {
+      const box = document.getElementById("instructionsBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    }
+
     function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function startGame() {
-      const difficulty = parseInt(document.getElementById('difficulty').value);
-      const numberOfCups = (difficulty === 10) ? 4 : 3;
-      let cups = Array(numberOfCups).fill(0);
-      const ballPosition = Math.floor(Math.random() * numberOfCups);
-      cups[ballPosition] = 1;
+    function createCups(n) {
+      const container = document.getElementById("cupContainer");
+      container.innerHTML = "";
+      cups = [];
 
-      displayMessage(`The ball starts under cup ${ballPosition + 1}. Watch carefully!`);
+      for (let i = 0; i < n; i++) {
+        const cup = document.createElement("div");
+        cup.className = "cup";
+        cup.dataset.index = i;
+        cup.style.transform = `translateX(0px)`;
+        cup.addEventListener("click", guessCup);
+        container.appendChild(cup);
+        cups.push(cup);
+      }
+    }
+
+    async function startGame() {
+      allowGuess = false;
+      document.getElementById("playAgain").style.display = "none";
+      const difficulty = parseInt(document.getElementById("difficulty").value);
+      const numCups = difficulty === 10 ? 4 : 3;
+      createCups(numCups);
+
+      ballIndex = Math.floor(Math.random() * numCups);
+      displayMessage(`🎯 Watch closely! The ball is under cup ${ballIndex + 1}.`);
       await sleep(2000);
 
       const numSwaps = 2 + difficulty;
-      for (let i = 1; i <= numSwaps; i++) {
-          clearMessage();
-          let [a, b] = randomTwoDistinct(numberOfCups);
-          [cups[a], cups[b]] = [cups[b], cups[a]];
-          displayMessage(`Swap ${i}: swapping cup ${a + 1} and cup ${b + 1}...`);
-          await sleep(1500);
+      for (let i = 0; i < numSwaps; i++) {
+        const [a, b] = randomTwoDistinct(numCups);
+        await animateSwap(a, b);
+        if (ballIndex === a) ballIndex = b;
+        else if (ballIndex === b) ballIndex = a;
+        displayMessage(`🔁 Swapped cup ${a + 1} with cup ${b + 1}...`);
+        await sleep(800);
       }
 
-      clearMessage();
-      let guess = prompt(`All done! Which cup has the ball now? (1-${numberOfCups})`);
-      guess = parseInt(guess) - 1;
-
-      if (cups[guess] === 1)
-          alert("Correct! 🎉 You found the ball!");
-      else
-          alert(`Wrong! 😢 The ball was under cup ${cups.indexOf(1) + 1}.`);
+      displayMessage("Click the cup you think has the ball!");
+      allowGuess = true;
     }
 
     function randomTwoDistinct(max) {
       let a = Math.floor(Math.random() * max);
       let b;
       do {
-          b = Math.floor(Math.random() * max);
+        b = Math.floor(Math.random() * max);
       } while (a === b);
       return [a, b];
     }
 
-    function displayMessage(msg) {
-      document.getElementById('message').textContent = msg;
+    async function animateSwap(a, b) {
+      const dist = (b - a) * 100;
+      cups[a].style.transform = `translateX(${dist}px)`;
+      cups[b].style.transform = `translateX(${-dist}px)`;
+      await sleep(500);
+
+      // Swap elements in array
+      [cups[a], cups[b]] = [cups[b], cups[a]];
+
+      // Reset transforms
+      cups[a].style.transform = `translateX(0px)`;
+      cups[b].style.transform = `translateX(0px)`;
     }
 
-    function clearMessage() {
-      document.getElementById('message').textContent = '';
+    function guessCup(e) {
+      if (!allowGuess) return;
+      const guess = parseInt(e.currentTarget.dataset.index);
+      allowGuess = false;
+
+      if (guess === ballIndex) {
+        alert("🎉 Correct! You found the ball!");
+        wins++;
+      } else {
+        alert(`😢 Nope! The ball was under cup ${ballIndex + 1}.`);
+        losses++;
+      }
+
+      updateScore();
+      displayMessage("Wanna try again? Select a difficulty and click play.");
+      document.getElementById("playAgain").style.display = "inline-block";
+    }
+
+    function updateScore() {
+      document.getElementById("wins").textContent = wins;
+      document.getElementById("losses").textContent = losses;
+    }
+
+    function displayMessage(msg) {
+      document.getElementById("message").textContent = msg;
     }
   </script>
 
