@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"UTF-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+  <title>Ilana Pollack's GitHub Website</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    #gameArea { margin-top: 30px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    select { font-size: 16px; padding: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Hello everyone!</h1>
+  <p>Welcime to my Github website. My name is Ilana Pollack! Enjoy!</p>
+
+  <hr>
+
+  <h2>🎩 Play the Shell Game 🎩</h2>
+
+  <div id=\"gameArea\">
+    <label for=\"difficulty\">Choose Difficulty: </label>
+    <select id=\"difficulty\">
+        <option value=\"1\">1 (Easy)</option>
+        <option value=\"2\">2</option>
+        <option value=\"3\">3</option>
+        <option value=\"4\">4</option>
+        <option value=\"5\">5 (Medium)</option>
+        <option value=\"6\">6</option>
+        <option value=\"7\">7</option>
+        <option value=\"8\">8</option>
+        <option value=\"9\">9</option>
+        <option value=\"10\">10 (Hard)</option>
+    </select>
+
+    <div style=\"margin-top: 20px;\">
+        <button onclick=\"startGame()\">Start Game</button>
+    </div>
+
+    <p id=\"message\"></p>
+  </div>
+
+  <script>
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function startGame() {
+      const difficulty = parseInt(document.getElementById('difficulty').value);
+      const numberOfCups = (difficulty === 10) ? 4 : 3;
+      let cups = Array(numberOfCups).fill(0);
+      const ballPosition = Math.floor(Math.random() * numberOfCups);
+      cups[ballPosition] = 1;
+
+      displayMessage(`The ball starts under cup ${ballPosition + 1}. Watch carefully!`);
+      await sleep(2000);
+
+      const numSwaps = 2 + difficulty;
+      for (let i = 1; i <= numSwaps; i++) {
+          clearMessage();
+          let [a, b] = randomTwoDistinct(numberOfCups);
+          [cups[a], cups[b]] = [cups[b], cups[a]];
+          displayMessage(`Swap ${i}: swapping cup ${a + 1} and cup ${b + 1}...`);
+          await sleep(1500);
+      }
+
+      clearMessage();
+      let guess = prompt(`All done! Which cup has the ball now? (1-${numberOfCups})`);
+      guess = parseInt(guess) - 1;
+
+      if (cups[guess] === 1)
+          alert(\"Correct! 🎉 You found the ball!\");
+      else
+          alert(`Wrong! 😢 The ball was under cup ${cups.indexOf(1) + 1}.`);
+    }
+
+    function randomTwoDistinct(max) {
+      let a = Math.floor(Math.random() * max);
+      let b;
+      do {
+          b = Math.floor(Math.random() * max);
+      } while (a === b);
+      return [a, b];
+    }
+
+    function displayMessage(msg) {
+      document.getElementById('message').textContent = msg;
+    }
+
+    function clearMessage() {
+      document.getElementById('message').textContent = '';
+    }
+  </script>
+
+</body>
+</html>
