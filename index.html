@@ -76,6 +76,21 @@
       border-radius: 0 0 10px 10px;
     }
 
+    .lifted {
+      transform: translateY(-60px) !important;
+    }
+
+    .ball {
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
     #message {
       margin-top: 20px;
       font-size: 18px;
@@ -105,7 +120,7 @@
       <li>Select a difficulty from 1 (easy) to 10 (hard).</li>
       <li>Watch the cups slide and swap places!</li>
       <li>Click the cup where you think the ball is hidden.</li>
-      <li>Check your score and try again!</li>
+      <li>If you're right, confetti will fly and the cup will lift!</li>
     </ul>
   </div>
 
@@ -124,7 +139,6 @@
       <option value="10">10 (Hard)</option>
     </select>
     <button onclick="startGame()">Start Game</button>
-    <button onclick="toggleSound()" id="muteBtn">🔊 Sound On</button>
 
     <div id="cupContainer"></div>
     <p id="message"></p>
@@ -132,12 +146,7 @@
     <button id="playAgain" onclick="startGame()">Play Again</button>
   </div>
 
-  <!-- 🎧 Sound Effects -->
-  <audio id="swapSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_e3cd9f06e3.mp3"></audio>
-  <audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_9d42362c69.mp3"></audio>
-  <audio id="loseSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_6c121f6c99.mp3"></audio>
-
-  <!-- 🎊 Confetti library -->
+  <!-- 🎊 Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script>
@@ -146,16 +155,6 @@
     let allowGuess = false;
     let wins = 0;
     let losses = 0;
-    let isMuted = false;
-
-    const swapSound = document.getElementById("swapSound");
-    const winSound = document.getElementById("winSound");
-    const loseSound = document.getElementById("loseSound");
-
-    function toggleSound() {
-      isMuted = !isMuted;
-      document.getElementById("muteBtn").textContent = isMuted ? "🔇 Sound Off" : "🔊 Sound On";
-    }
 
     function toggleInstructions() {
       const box = document.getElementById("instructionsBox");
@@ -180,11 +179,20 @@
         container.appendChild(cup);
         cups.push(cup);
       }
+
+      // Add ball
+      const ball = document.createElement("div");
+      ball.className = "ball";
+      ball.style.display = "none"; // Hidden by default
+      ball.id = "ball";
+      container.appendChild(ball);
     }
 
     async function startGame() {
       allowGuess = false;
       document.getElementById("playAgain").style.display = "none";
+      document.getElementById("ball").style.display = "none";
+
       const difficulty = parseInt(document.getElementById("difficulty").value);
       const numCups = difficulty === 10 ? 4 : 3;
       createCups(numCups);
@@ -220,7 +228,6 @@
       const dist = (b - a) * 100;
       cups[a].style.transform = `translateX(${dist}px)`;
       cups[b].style.transform = `translateX(${-dist}px)`;
-      if (!isMuted) swapSound.play();
       await sleep(500);
 
       [cups[a], cups[b]] = [cups[b], cups[a]];
@@ -230,16 +237,17 @@
 
     function guessCup(e) {
       if (!allowGuess) return;
-      const guess = parseInt(e.currentTarget.dataset.index);
       allowGuess = false;
+      const guess = parseInt(e.currentTarget.dataset.index);
+      const cup = cups[guess];
 
       if (guess === ballIndex) {
-        if (!isMuted) winSound.play();
-        confetti(); // 🎊 Confetti blast!
+        cup.classList.add("lifted");
+        showBall(cup);
+        confetti();
         alert("🎉 Correct! You found the ball!");
         wins++;
       } else {
-        if (!isMuted) loseSound.play();
         alert(`😢 Nope! The ball was under cup ${ballIndex + 1}.`);
         losses++;
       }
@@ -247,6 +255,14 @@
       updateScore();
       displayMessage("Wanna try again? Select a difficulty and click play.");
       document.getElementById("playAgain").style.display = "inline-block";
+    }
+
+    function showBall(correctCup) {
+      const ball = document.getElementById("ball");
+      const cupRect = correctCup.getBoundingClientRect();
+      const containerRect = document.getElementById("cupContainer").getBoundingClientRect();
+      ball.style.left = `${cupRect.left - containerRect.left + 40}px`;
+      ball.style.display = "block";
     }
 
     function updateScore() {
