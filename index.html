@@ -124,6 +124,7 @@
       <option value="10">10 (Hard)</option>
     </select>
     <button onclick="startGame()">Start Game</button>
+    <button onclick="toggleSound()" id="muteBtn">🔊 Sound On</button>
 
     <div id="cupContainer"></div>
     <p id="message"></p>
@@ -131,12 +132,30 @@
     <button id="playAgain" onclick="startGame()">Play Again</button>
   </div>
 
+  <!-- 🎧 Sound Effects -->
+  <audio id="swapSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_e3cd9f06e3.mp3"></audio>
+  <audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_9d42362c69.mp3"></audio>
+  <audio id="loseSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_6c121f6c99.mp3"></audio>
+
+  <!-- 🎊 Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <script>
     let cups = [];
     let ballIndex = -1;
     let allowGuess = false;
     let wins = 0;
     let losses = 0;
+    let isMuted = false;
+
+    const swapSound = document.getElementById("swapSound");
+    const winSound = document.getElementById("winSound");
+    const loseSound = document.getElementById("loseSound");
+
+    function toggleSound() {
+      isMuted = !isMuted;
+      document.getElementById("muteBtn").textContent = isMuted ? "🔇 Sound Off" : "🔊 Sound On";
+    }
 
     function toggleInstructions() {
       const box = document.getElementById("instructionsBox");
@@ -181,7 +200,7 @@
         if (ballIndex === a) ballIndex = b;
         else if (ballIndex === b) ballIndex = a;
         displayMessage(`🔁 Swapped cup ${a + 1} with cup ${b + 1}...`);
-        await sleep(800);
+        await sleep(2500);
       }
 
       displayMessage("Click the cup you think has the ball!");
@@ -201,12 +220,10 @@
       const dist = (b - a) * 100;
       cups[a].style.transform = `translateX(${dist}px)`;
       cups[b].style.transform = `translateX(${-dist}px)`;
+      if (!isMuted) swapSound.play();
       await sleep(500);
 
-      // Swap elements in array
       [cups[a], cups[b]] = [cups[b], cups[a]];
-
-      // Reset transforms
       cups[a].style.transform = `translateX(0px)`;
       cups[b].style.transform = `translateX(0px)`;
     }
@@ -217,9 +234,12 @@
       allowGuess = false;
 
       if (guess === ballIndex) {
+        if (!isMuted) winSound.play();
+        confetti(); // 🎊 Confetti blast!
         alert("🎉 Correct! You found the ball!");
         wins++;
       } else {
+        if (!isMuted) loseSound.play();
         alert(`😢 Nope! The ball was under cup ${ballIndex + 1}.`);
         losses++;
       }
