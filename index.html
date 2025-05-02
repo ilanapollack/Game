@@ -180,10 +180,10 @@
         cups.push(cup);
       }
 
-      // Add ball
+      // Add the red ball under the cups (hidden until revealed)
       const ball = document.createElement("div");
       ball.className = "ball";
-      ball.style.display = "none"; // Hidden by default
+      ball.style.display = "none";
       ball.id = "ball";
       container.appendChild(ball);
     }
@@ -191,11 +191,13 @@
     async function startGame() {
       allowGuess = false;
       document.getElementById("playAgain").style.display = "none";
-      document.getElementById("ball").style.display = "none";
 
       const difficulty = parseInt(document.getElementById("difficulty").value);
       const numCups = difficulty === 10 ? 4 : 3;
-      createCups(numCups);
+
+      createCups(numCups); // <- now we create cups *and* the ball first
+      const ball = document.getElementById("ball");
+      ball.style.display = "none";
 
       ballIndex = Math.floor(Math.random() * numCups);
       displayMessage(`🎯 Watch closely! The ball is under cup ${ballIndex + 1}.`);
@@ -240,10 +242,11 @@
       allowGuess = false;
       const guess = parseInt(e.currentTarget.dataset.index);
       const cup = cups[guess];
+      const ball = document.getElementById("ball");
 
       if (guess === ballIndex) {
         cup.classList.add("lifted");
-        showBall(cup);
+        showBall(cup, ball);
         confetti();
         alert("🎉 Correct! You found the ball!");
         wins++;
@@ -257,8 +260,7 @@
       document.getElementById("playAgain").style.display = "inline-block";
     }
 
-    function showBall(correctCup) {
-      const ball = document.getElementById("ball");
+    function showBall(correctCup, ball) {
       const cupRect = correctCup.getBoundingClientRect();
       const containerRect = document.getElementById("cupContainer").getBoundingClientRect();
       ball.style.left = `${cupRect.left - containerRect.left + 40}px`;
